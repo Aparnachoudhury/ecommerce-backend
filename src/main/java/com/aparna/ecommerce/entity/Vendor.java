@@ -5,17 +5,15 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "users")
-public class user {
+public class Vendor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private String businessName;
 
-    @Column(unique = true)
-    private String email;
-
-    private String password;
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }
