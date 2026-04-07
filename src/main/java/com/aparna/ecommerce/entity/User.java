@@ -21,4 +21,6 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private RoleType role;
+    private boolean emailVerified = false;
+    private boolean enabled = true;
 }
