@@ -1,89 +1,165 @@
 # 🛒 Ecommerce Backend (Spring Boot)
 
-## 📌 Overview
+## 🚀 Overview
 
-This is a backend project built using **Spring Boot** and **PostgreSQL**.
-It is part of my learning journey to build a full-stack ecommerce system with secure authentication and scalable architecture.
+This is a **real-world inspired ecommerce backend system** built using **Spring Boot** and **PostgreSQL**.
 
----
-
-## 🚀 Tech Stack
-
-* Java
-* Spring Boot
-* Spring Data JPA
-* Spring Security
-* PostgreSQL
-* Maven
+Instead of just using platforms like Amazon or Flipkart, I built my own backend to understand how such systems work internally — including authentication, vendor onboarding, and order management.
 
 ---
 
-## ✅ Features
+## 🧰 Tech Stack
 
-### 🟢 Day 1
-
-* Project setup using Spring Boot
-* PostgreSQL database integration
-* User entity creation
-* Automatic table generation using JPA
-
----
-
-### 🔐 Day 2
-
-* User, Vendor, and Role-based system
-* Role enum (CUSTOMER, VENDOR, ADMIN, SUPPORT)
-* One-to-One relationship (Vendor ↔ User)
-* Spring Security configuration
-* Password encryption using Argon2
-* Custom UserDetailsService (database-based authentication)
-* Role hierarchy (ADMIN > VENDOR > CUSTOMER)
+* **Java**
+* **Spring Boot**
+* **Spring Security (JWT Authentication)**
+* **PostgreSQL**
+* **Flyway (Database Migrations)**
+* **Maven**
 
 ---
 
-### 🚀 Day 3
+## 🔐 Features
 
-* User Authentication APIs (Signup & Login)
-* JWT Token generation & validation
-* JWT Authentication filter
-* Refresh Token mechanism
-* Email verification token system
-* Rate limiting filter for API protection
-* Secure REST APIs with Spring Security
-
----
-
-## 📂 Project Structure
-
-* `entity` → Database models
-* `repository` → Database access layer
-* `service` → Business logic
-* `controller` → REST APIs
-* `security` → JWT & security configuration
-* `dto` → Request & response objects
-
----
-
-## 🔐 Security Highlights
+### ✅ Authentication & Security
 
 * JWT-based authentication
-* Refresh token support
-* Password encryption (Argon2)
-* Role-based authorization
-* API rate limiting
+* Secure password hashing using **Argon2**
+* Stateless session management
+* Custom JWT filter implementation
+
+### 👥 Role-Based Access Control
+
+* Roles: **ADMIN, VENDOR, CUSTOMER, SUPPORT**
+* Endpoint-level protection
+* Role hierarchy support
+
+### 🏪 Vendor System
+
+* Vendor onboarding flow
+* KYC status:
+
+  * `PENDING`
+  * `APPROVED`
+  * `REJECTED`
+* Admin approval/rejection APIs
+* Vendor approval queue system
+
+### 🛍️ Ecommerce Core
+
+* Product & Category management
+* Product Variants (with JSON attributes support)
+* Inventory management system
+
+### 📦 Orders & Payments
+
+* Order creation & tracking
+* Order items structure
+* Payment handling system
+
+### 🗄️ Database & Migrations
+
+* Version-controlled schema using **Flyway**
+* Clean relational database design
+* Multiple migration files (V1 → V5)
 
 ---
 
-## 🔜 Upcoming (Day 4)
+## 📡 API Endpoints
 
-* Product management APIs
-* Cart & order system
-* Payment integration
-* API documentation (Swagger)
+### 🔓 Public APIs
+
+* `POST /api/auth/signup`
+* `POST /api/auth/login`
+
+### 🔒 Protected APIs (Require JWT)
+
+* `GET /api/products`
+* `POST /api/vendor/apply`
+* `POST /api/admin/vendors/{id}/approve`
+* `POST /api/admin/vendors/{id}/reject`
+
+👉 Add header:
+
+```id="h0h0yf"
+Authorization: Bearer <your_token>
+```
+
+---
+
+## ⚙️ Setup Instructions
+
+### 1️⃣ Clone Repository
+
+```bash id="b7i3hq"
+git clone https://github.com/Aparnachoudhury/ecommerce-backend.git
+cd ecommerce-backend
+```
+
+### 2️⃣ Configure Database
+
+Update `application.properties`:
+
+```properties id="v8z2b1"
+spring.datasource.url=jdbc:postgresql://localhost:5432/your_db
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+```
+
+---
+
+### 3️⃣ Run Application
+
+```bash id="6p2g7z"
+mvn spring-boot:run
+```
+
+---
+
+## 🧪 Testing (Postman)
+
+### Signup
+
+```http id="3c5x6l"
+POST /api/auth/signup
+```
+
+### Login
+
+```http id="7d8f9k"
+POST /api/auth/login
+```
+
+👉 Copy JWT token and use in headers for protected APIs.
+
+---
+
+## 💡 Key Learnings
+
+* Built JWT authentication from scratch
+* Understood Spring Security filter chain deeply
+* Designed scalable relational database schema
+* Implemented multi-vendor ecommerce architecture
+* Worked with Flyway migrations for production-ready DB versioning
+
+---
+
+## 🚀 Future Improvements
+
+* Payment gateway integration (Stripe/Razorpay)
+* Order tracking & notifications
+* Docker containerization
+* Microservices architecture
+* Frontend integration (React)
 
 ---
 
 ## 👩‍💻 Author
 
 **Aparna Choudhury**
-Backend Developer | Spring Boot Enthusiast 🚀
+
+---
+
+## ⭐ If you like this project
+
+Give it a ⭐ on GitHub!
