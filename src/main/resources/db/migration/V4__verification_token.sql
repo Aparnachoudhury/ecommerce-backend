@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS verification_token (
+    id BIGSERIAL PRIMARY KEY,
+    token VARCHAR(255),
+    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+    expiry_date TIMESTAMP WITH TIME ZONE
+);

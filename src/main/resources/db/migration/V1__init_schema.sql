@@ -1,4 +1,4 @@
--- Users table (already exists, Flyway baseline handles this)
+-- Users table
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255),
@@ -23,4 +23,10 @@ CREATE TABLE IF NOT EXISTS vendor (
     id BIGSERIAL PRIMARY KEY,
     business_name VARCHAR(255),
     user_id BIGINT UNIQUE REFERENCES users(id) ON DELETE CASCADE
-);nex
+);
+
+-- ✅ ADD THIS (THIS IS YOUR MISSING PIECE)
+CREATE TABLE IF NOT EXISTS category (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);

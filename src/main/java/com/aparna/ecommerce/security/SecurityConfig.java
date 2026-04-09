@@ -1,5 +1,5 @@
 package com.aparna.ecommerce.security;
-
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +19,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 

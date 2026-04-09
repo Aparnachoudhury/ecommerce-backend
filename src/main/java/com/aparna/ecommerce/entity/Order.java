@@ -7,29 +7,23 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name = "product")
-public class Product {
+@Table(name = "orders")
+public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name;
-
-    private String description;
-
     @ManyToOne
-    @JoinColumn(name = "vendor_id")
-    private Vendor vendor;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(nullable = false)
-    private BigDecimal basePrice;
+    private String status = "PENDING";
 
-    private boolean isActive = true;
+    @Column(nullable = false)
+    private BigDecimal totalAmount;
+
+    private String shippingAddress;
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
