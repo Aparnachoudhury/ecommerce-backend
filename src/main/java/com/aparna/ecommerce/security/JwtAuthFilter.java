@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -22,6 +23,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
 
+    // ✅ Public endpoints (no JWT required)
+    private static final List<String> PUBLIC_URLS = List.of(
+            "/api/auth",
+            "/signup"
+    );
+
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -29,14 +36,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // ✅ STEP 1: Skip auth endpoints
-        String path = request.getServletPath();
-        if (path.startsWith("/api/auth")) {
+        // ✅ STEP 1: Get request path (FIXED)
+        String path = request.getRequestURI();
+
+        // ✅ STEP 2: Skip public endpoints
+        boolean isPublic = PUBLIC_URLS.stream()
+                .anyMatch(path::startsWith);
+
+        if (isPublic) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // ✅ STEP 2: Get Authorization header
+        // ✅ STEP 3: Get Authorization header
         final String authHeader = request.getHeader("Authorization");
 
         // If no token → continue
@@ -45,13 +57,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // ✅ STEP 3: Extract token
+        // ✅ STEP 4: Extract token
         final String jwt = authHeader.substring(7);
 
-        // ✅ FIXED: correct method
+        // Extract email from token
         final String userEmail = jwtService.extractEmail(jwt);
 
-        // ✅ STEP 4: Validate token
+        // ✅ STEP 5: Validate token
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
@@ -73,7 +85,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
 
-        // ✅ STEP 5: Continue
+        // ✅ STEP 6: Continue filter chain
         filterChain.doFilter(request, response);
     }
 }
