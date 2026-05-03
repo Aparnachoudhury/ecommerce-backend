@@ -54,13 +54,7 @@ public class CartController {
                 cartService.getCartItems(guestId));
     }
 
-    @PostMapping("/merge")
-    public ResponseEntity<List<CartItem>> mergeCart(
-            @RequestHeader(value = "X-Guest-Id",
-                    required = false) String guestId) {
-        return ResponseEntity.ok(
-                cartService.mergeGuestCart(guestId));
-    }
+
 
     @DeleteMapping("/clear")
     public ResponseEntity<Void> clearCart(

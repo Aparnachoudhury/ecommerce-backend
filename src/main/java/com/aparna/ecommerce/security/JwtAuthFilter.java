@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -23,12 +22,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
 
-    // ✅ Public endpoints (no JWT required)
-    private static final List<String> PUBLIC_URLS = List.of(
-            "/api/auth",
-            "/signup"
-    );
-
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -36,56 +29,69 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // ✅ STEP 1: Get request path (FIXED)
         String path = request.getRequestURI();
 
-        // ✅ STEP 2: Skip public endpoints
-        boolean isPublic = PUBLIC_URLS.stream()
-                .anyMatch(path::startsWith);
-
-        if (isPublic) {
+        // =========================
+        // 🔥 SKIP AUTH FOR THESE
+        // =========================
+        if (
+                path.startsWith("/api/auth") ||
+                        path.startsWith("/signup") ||
+                        path.startsWith("/api/payment") ||   // ✅ Razorpay verify FIX
+                        path.startsWith("/ws")
+        ) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // ✅ STEP 3: Get Authorization header
         final String authHeader = request.getHeader("Authorization");
 
-        // If no token → continue
+        // Debug logs (optional)
+        System.out.println("Incoming request: " + path);
+        System.out.println("Auth Header: " + authHeader);
+
+        // =========================
+        // ❌ NO TOKEN → CONTINUE
+        // =========================
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // ✅ STEP 4: Extract token
-        final String jwt = authHeader.substring(7);
+        try {
+            String jwt = authHeader.substring(7);
+            String userEmail = jwtService.extractEmail(jwt);
 
-        // Extract email from token
-        final String userEmail = jwtService.extractEmail(jwt);
+            if (userEmail != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
 
-        // ✅ STEP 5: Validate token
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(userEmail);
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+                // ✅ VALIDATE TOKEN (IMPORTANT)
+                if (jwtService.isTokenValid(jwt, userDetails)) {
 
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
 
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("✅ AUTH SET for: " + userEmail);
+                }
             }
+
+        } catch (Exception e) {
+            System.out.println("❌ JWT Error: " + e.getMessage());
         }
 
-        // ✅ STEP 6: Continue filter chain
         filterChain.doFilter(request, response);
     }
 }

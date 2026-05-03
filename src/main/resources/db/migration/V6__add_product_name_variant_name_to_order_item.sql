@@ -1,0 +1,5 @@
+ALTER TABLE order_item
+ADD COLUMN IF NOT EXISTS product_name VARCHAR(255);
+
+ALTER TABLE order_item
+ADD COLUMN IF NOT EXISTS variant_name VARCHAR(255);

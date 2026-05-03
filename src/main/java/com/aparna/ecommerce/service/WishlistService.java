@@ -1,49 +1,47 @@
 package com.aparna.ecommerce.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RSet;
-import org.redisson.api.RedissonClient;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class WishlistService {
 
-    private final RedissonClient redissonClient;
+    // 🔥 In-memory wishlist (NO REDIS)
+    private final Map<String, Set<Long>> wishlistStore = new HashMap<>();
 
     private String getWishlistKey() {
         String email = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
+                .getAuthentication()
+                .getName();
         return "wishlist:" + email;
     }
 
+    // ➕ Add to wishlist
     public Set<Long> addToWishlist(Long productId) {
-        RSet<Long> wishlist =
-                redissonClient.getSet(getWishlistKey());
+        String key = getWishlistKey();
+        Set<Long> wishlist = wishlistStore.getOrDefault(key, new HashSet<>());
+
         wishlist.add(productId);
-        log.info("Added {} to wishlist", productId);
-        return wishlist.readAll();
+        wishlistStore.put(key, wishlist);
+
+        return wishlist;
     }
 
+    // ❌ Remove from wishlist
     public Set<Long> removeFromWishlist(Long productId) {
-        RSet<Long> wishlist =
-                redissonClient.getSet(getWishlistKey());
+        String key = getWishlistKey();
+        Set<Long> wishlist = wishlistStore.getOrDefault(key, new HashSet<>());
+
         wishlist.remove(productId);
-        return wishlist.readAll();
+        return wishlist;
     }
 
+    // 📦 Get wishlist
     public Set<Long> getWishlist() {
-        RSet<Long> wishlist =
-                redissonClient.getSet(getWishlistKey());
-        return wishlist.readAll();
-    }
-
-    public void clearWishlist() {
-        redissonClient.getSet(getWishlistKey()).delete();
+        return wishlistStore.getOrDefault(getWishlistKey(), new HashSet<>());
     }
 }

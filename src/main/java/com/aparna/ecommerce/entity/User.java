@@ -19,6 +19,7 @@ public class User {
 
     @JsonIgnore
     private String password;
+    private String businessName;
 
     @Enumerated(EnumType.STRING)
     private RoleType role;

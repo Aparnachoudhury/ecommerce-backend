@@ -1,165 +1,221 @@
-# 🛒 Ecommerce Backend (Spring Boot)
+# 🛒 EcomVeda — Full Stack Ecommerce System
 
-## 🚀 Overview
-
-This is a **real-world inspired ecommerce backend system** built using **Spring Boot** and **PostgreSQL**.
-
-Instead of just using platforms like Amazon or Flipkart, I built my own backend to understand how such systems work internally — including authentication, vendor onboarding, and order management.
+> A production-inspired ecommerce platform built from scratch to understand how real-world systems like Amazon work — including authentication, multi-vendor onboarding, Redis-powered cart, real-time order tracking, and payment integration.
 
 ---
 
-## 🧰 Tech Stack
-
-* **Java**
-* **Spring Boot**
-* **Spring Security (JWT Authentication)**
-* **PostgreSQL**
-* **Flyway (Database Migrations)**
-* **Maven**
+![Java](https://img.shields.io/badge/Java-ED8B00?style=flat&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=flat&logo=spring-boot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-C71A36?style=flat&logo=apache-maven&logoColor=white)
 
 ---
 
-## 🔐 Features
+## 📌 Why I Built This
 
-### ✅ Authentication & Security
+Most developers use ready-made platforms for ecommerce. I wanted to understand what happens under the hood — how JWT authentication works at the filter level, how Redis makes cart operations 10x faster than a database, how multi-vendor approval flows are designed, and how transactional order placement prevents data inconsistency.
 
-* JWT-based authentication
-* Secure password hashing using **Argon2**
-* Stateless session management
-* Custom JWT filter implementation
+This project is my answer to those questions.
 
-### 👥 Role-Based Access Control
+---
 
-* Roles: **ADMIN, VENDOR, CUSTOMER, SUPPORT**
-* Endpoint-level protection
-* Role hierarchy support
+## 🚀 Tech Stack
+
+### Backend
+- Java 17
+- Spring Boot
+- Spring Security + JWT
+- PostgreSQL
+- Redis (Cart & Wishlist)
+- Flyway (DB migrations)
+
+### Frontend
+- React (Vite)
+- Axios API integration
+
+### Payment
+- Razorpay Integration
+- 
+---
+
+## ✨ Features
+
+### 🔐 Authentication & Security
+- JWT-based authentication
+- Role-based access control (ADMIN, VENDOR, CUSTOMER)
+- Secure password hashing
+- Custom JWT filter
 
 ### 🏪 Vendor System
+- Vendor onboarding with approval flow
+- KYC status: PENDING → APPROVED / REJECTED
+- Vendors can manage products after approval
 
-* Vendor onboarding flow
-* KYC status:
+### 🛍️ Product & Inventory
+- Product management
+- Category support
+- Inventory tracking
 
-  * `PENDING`
-  * `APPROVED`
-  * `REJECTED`
-* Admin approval/rejection APIs
-* Vendor approval queue system
+### 🛒 Cart (Redis-Based)
+- Ultra-fast cart using Redis
+- Guest cart support
+- Auto-expiry with TTL
+- Cart merge on login
 
-### 🛍️ Ecommerce Core
+### ❤️ Wishlist
+- Stored in Redis (Set)
+- O(1) operations
 
-* Product & Category management
-* Product Variants (with JSON attributes support)
-* Inventory management system
+### 📦 Orders
+- Create order from cart
+- Order lifecycle: PENDING_PAYMENT → PAID → PROCESSING → SHIPPED → DELIVERED
 
-### 📦 Orders & Payments
+- Cancel support
 
-* Order creation & tracking
-* Order items structure
-* Payment handling system
+### 💳 Payment Integration
+- Razorpay payment gateway
+- Payment verification via backend
+- Order status auto-updated to **PAID**
 
-### 🗄️ Database & Migrations
-
-* Version-controlled schema using **Flyway**
-* Clean relational database design
-* Multiple migration files (V1 → V5)
-
----
-
-## 📡 API Endpoints
-
-### 🔓 Public APIs
-
-* `POST /api/auth/signup`
-* `POST /api/auth/login`
-
-### 🔒 Protected APIs (Require JWT)
-
-* `GET /api/products`
-* `POST /api/vendor/apply`
-* `POST /api/admin/vendors/{id}/approve`
-* `POST /api/admin/vendors/{id}/reject`
-
-👉 Add header:
-
-```id="h0h0yf"
-Authorization: Bearer <your_token>
-```
+### 🔄 Real-Time Updates
+- WebSocket-based order tracking
 
 ---
 
-## ⚙️ Setup Instructions
 
-### 1️⃣ Clone Repository
+## 📡 API Highlights
 
-```bash id="b7i3hq"
+### Auth
+
+POST /api/auth/login
+POST /api/auth/register
+
+
+### Products
+
+GET /api/products
+
+
+### Cart
+
+POST /api/cart/add
+GET /api/cart
+
+
+### Orders
+
+POST /api/orders/create
+
+
+### Payment
+
+POST /api/payment/verify
+
+
+---
+
+## ⚡ Performance Highlights
+
+| Feature | Benefit |
+|--------|--------|
+| Redis Cart | Sub-millisecond operations |
+| JWT Auth | Stateless & scalable |
+| Flyway | Reliable DB migrations |
+| Transactional Orders | Prevents data inconsistency |
+
+---
+
+## 🗂️ Project Structure
+
+
+ecommerce/
+│
+├── src/ # Spring Boot backend
+├── logicveda-frontend/ # React frontend
+├── docker-compose.yml # (Future use)
+├── Dockerfile # (Future use)
+
+
+---
+
+## ⚙️ Local Setup
+
+### Prerequisites
+- Java 17+
+- PostgreSQL
+- Redis
+- Node.js
+
+---
+
+### Backend Setup
+
+```bash
 git clone https://github.com/Aparnachoudhury/ecommerce-backend.git
 cd ecommerce-backend
-```
 
-### 2️⃣ Configure Database
+Update application.properties:
 
-Update `application.properties`:
-
-```properties id="v8z2b1"
 spring.datasource.url=jdbc:postgresql://localhost:5432/your_db
 spring.datasource.username=your_username
 spring.datasource.password=your_password
-```
 
 ---
 
-### 3️⃣ Run Application
+Run backend:
 
-```bash id="6p2g7z"
 mvn spring-boot:run
-```
+
+Frontend Setup:
+cd logicveda-frontend
+npm install
+npm run dev
+Redis
+redis-server
 
 ---
 
-## 🧪 Testing (Postman)
+📊 Current Status
 
-### Signup
-
-```http id="3c5x6l"
-POST /api/auth/signup
-```
-
-### Login
-
-```http id="7d8f9k"
-POST /api/auth/login
-```
-
-👉 Copy JWT token and use in headers for protected APIs.
+Module	Status
+Authentication	✅ Complete
+Vendor System	✅ Complete
+Cart (Redis)	✅ Complete
+Orders	✅ Complete
+Payment (Razorpay)	✅ Complete
+WebSocket	✅ Complete
+Docker	🚧 Planned
+CI/CD	🚧 Planned
+Cloud Deploy	🚧 Planned
 
 ---
 
-## 💡 Key Learnings
+🚀 Future Enhancements
+Docker containerization
+Kubernetes deployment
+CI/CD with GitHub Actions
+AWS / GCP deployment
+Email notifications
+Microservices architecture
+🎥 Demo
 
-* Built JWT authentication from scratch
-* Understood Spring Security filter chain deeply
-* Designed scalable relational database schema
-* Implemented multi-vendor ecommerce architecture
-* Worked with Flyway migrations for production-ready DB versioning
+👉 (Add your demo video link here)
 
----
+📸 Screenshots
 
-## 🚀 Future Improvements
+👉 (Add screenshots here — dashboard, orders, payment success)
 
-* Payment gateway integration (Stripe/Razorpay)
-* Order tracking & notifications
-* Docker containerization
-* Microservices architecture
-* Frontend integration (React)
+💡 Key Learnings:
+Deep understanding of Spring Security filter chain
+Redis data structures for real-time systems
+Transaction handling in order systems
+Payment gateway integration flow
+Full-stack system design
 
----
+👩‍💻 Author
+Aparna Choudhury
 
-## 👩‍💻 Author
+Building real systems to understand how the web works 🚀
 
-**Aparna Choudhury**
-
----
-
-## ⭐ If you like this project
-
-Give it a ⭐ on GitHub!
+⭐ If you like this project, consider giving it a star!

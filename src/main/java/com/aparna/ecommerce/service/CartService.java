@@ -5,58 +5,41 @@ import com.aparna.ecommerce.dto.CartRequest;
 import com.aparna.ecommerce.entity.ProductVariant;
 import com.aparna.ecommerce.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RMap;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class CartService {
 
-    private final RedissonClient redissonClient;
     private final ProductVariantRepository variantRepository;
 
-    @Value("${app.cart.guest-ttl-days}")
-    private long guestTtlDays;
+    // 🔥 In-memory cart (NO REDIS)
+    private final Map<String, List<CartItem>> cartStore = new HashMap<>();
 
-    @Value("${app.cart.user-ttl-days}")
-    private long userTtlDays;
-
-    // ── ADD ITEM ──────────────────────────────────────────────────
-    public List<CartItem> addItem(CartRequest request,
-                                  String guestId) {
-        String cartKey = getCartKey(guestId);
-        RMap<String, CartItem> cart =
-                redissonClient.getMap(cartKey);
+    // ── ADD ITEM ─────────────────────────────
+    public List<CartItem> addItem(CartRequest request, String guestId) {
+        String key = getCartKey(guestId);
 
         ProductVariant variant = variantRepository
                 .findById(request.getVariantId())
-                .orElseThrow(() ->
-                        new RuntimeException("Variant not found"));
+                .orElseThrow(() -> new RuntimeException("Variant not found"));
 
-        String itemKey = buildItemKey(
-                variant.getProduct().getId(),
-                variant.getId());
+        List<CartItem> cart = cartStore.getOrDefault(key, new ArrayList<>());
 
-        CartItem existing = cart.get(itemKey);
-        if (existing != null) {
-            existing.setQuantity(
-                    existing.getQuantity() + request.getQuantity());
-            existing.setTotalPrice(
-                    variant.getPrice().multiply(
-                            BigDecimal.valueOf(existing.getQuantity())));
-            cart.put(itemKey, existing);
+        Optional<CartItem> existing = cart.stream()
+                .filter(i -> i.getVariantId().equals(variant.getId()))
+                .findFirst();
+
+        if (existing.isPresent()) {
+            CartItem item = existing.get();
+            item.setQuantity(item.getQuantity() + request.getQuantity());
+            item.setTotalPrice(
+                    variant.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))
+            );
         } else {
             CartItem item = new CartItem(
                     variant.getProduct().getId(),
@@ -66,149 +49,62 @@ public class CartService {
                     variant.getSku(),
                     request.getQuantity(),
                     variant.getPrice(),
-                    variant.getPrice().multiply(
-                            BigDecimal.valueOf(request.getQuantity()))
+                    variant.getPrice().multiply(BigDecimal.valueOf(request.getQuantity()))
             );
-            cart.put(itemKey, item);
+            cart.add(item);
         }
 
-        setTtl(cart, cartKey, guestId);
-        log.info("Item added to cart: {}", cartKey);
-        return getCartItems(guestId);
+        cartStore.put(key, cart);
+        return cart;
     }
 
-    // ── REMOVE ITEM ───────────────────────────────────────────────
-    public List<CartItem> removeItem(Long variantId,
-                                     String guestId) {
-        String cartKey = getCartKey(guestId);
-        RMap<String, CartItem> cart =
-                redissonClient.getMap(cartKey);
-
-        ProductVariant variant = variantRepository
-                .findById(variantId)
-                .orElseThrow(() ->
-                        new RuntimeException("Variant not found"));
-
-        String itemKey = buildItemKey(
-                variant.getProduct().getId(), variantId);
-        cart.remove(itemKey);
-
-        log.info("Item removed from cart: {}", cartKey);
-        return getCartItems(guestId);
-    }
-
-    // ── UPDATE QUANTITY ───────────────────────────────────────────
-    public List<CartItem> updateItem(CartRequest request,
-                                     String guestId) {
-        String cartKey = getCartKey(guestId);
-        RMap<String, CartItem> cart =
-                redissonClient.getMap(cartKey);
-
-        ProductVariant variant = variantRepository
-                .findById(request.getVariantId())
-                .orElseThrow(() ->
-                        new RuntimeException("Variant not found"));
-
-        String itemKey = buildItemKey(
-                variant.getProduct().getId(),
-                variant.getId());
-
-        CartItem item = cart.get(itemKey);
-        if (item == null) {
-            throw new RuntimeException("Item not in cart");
-        }
-
-        if (request.getQuantity() <= 0) {
-            cart.remove(itemKey);
-        } else {
-            item.setQuantity(request.getQuantity());
-            item.setTotalPrice(variant.getPrice().multiply(
-                    BigDecimal.valueOf(request.getQuantity())));
-            cart.put(itemKey, item);
-        }
-
-        return getCartItems(guestId);
-    }
-
-    // ── GET CART ──────────────────────────────────────────────────
+    // ── GET CART ─────────────────────────────
     public List<CartItem> getCartItems(String guestId) {
-        String cartKey = getCartKey(guestId);
-        RMap<String, CartItem> cart =
-                redissonClient.getMap(cartKey);
-        return new ArrayList<>(cart.values());
+        return cartStore.getOrDefault(getCartKey(guestId), new ArrayList<>());
     }
 
-    // ── CLEAR CART ────────────────────────────────────────────────
+    // ── CLEAR CART ───────────────────────────
     public void clearCart(String guestId) {
-        String cartKey = getCartKey(guestId);
-        redissonClient.getMap(cartKey).delete();
-        log.info("Cart cleared: {}", cartKey);
+        cartStore.remove(getCartKey(guestId));
     }
 
-    // ── MERGE GUEST CART ON LOGIN ─────────────────────────────────
-    public List<CartItem> mergeGuestCart(String guestId) {
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-        String userCartKey = "cart:user:" + email;
-        String guestCartKey = "cart:guest:" + guestId;
+    // ── REMOVE ITEM ──────────────────────────
+    public List<CartItem> removeItem(Long variantId, String guestId) {
+        String key = getCartKey(guestId);
+        List<CartItem> cart = cartStore.getOrDefault(key, new ArrayList<>());
 
-        RMap<String, CartItem> guestCart =
-                redissonClient.getMap(guestCartKey);
-        RMap<String, CartItem> userCart =
-                redissonClient.getMap(userCartKey);
+        cart.removeIf(item -> item.getVariantId().equals(variantId));
+        return cart;
+    }
 
-        for (Map.Entry<String, CartItem> entry :
-                guestCart.entrySet()) {
-            CartItem guestItem = entry.getValue();
-            CartItem existing = userCart.get(entry.getKey());
+    // ── UPDATE ITEM ──────────────────────────
+    public List<CartItem> updateItem(CartRequest request, String guestId) {
+        String key = getCartKey(guestId);
+        List<CartItem> cart = cartStore.getOrDefault(key, new ArrayList<>());
 
-            if (existing != null) {
-                existing.setQuantity(
-                        existing.getQuantity() +
-                                guestItem.getQuantity());
-                existing.setTotalPrice(
-                        guestItem.getUnitPrice().multiply(
-                                BigDecimal.valueOf(
-                                        existing.getQuantity())));
-                userCart.put(entry.getKey(), existing);
-            } else {
-                userCart.put(entry.getKey(), guestItem);
+        for (CartItem item : cart) {
+            if (item.getVariantId().equals(request.getVariantId())) {
+                item.setQuantity(request.getQuantity());
+                item.setTotalPrice(
+                        item.getUnitPrice().multiply(BigDecimal.valueOf(request.getQuantity()))
+                );
             }
         }
-
-        // Delete guest cart after merge
-        guestCart.delete();
-        userCart.expire(java.time.Duration.ofDays(userTtlDays));
-
-        log.info("Guest cart merged into user cart: {}", email);
-        return new ArrayList<>(userCart.values());
+        return cart;
     }
 
-    // ── HELPERS ───────────────────────────────────────────────────
+    // ── KEY ──────────────────────────────────
     private String getCartKey(String guestId) {
-        String auth = null;
+        String user;
         try {
-            auth = SecurityContextHolder.getContext()
-                    .getAuthentication().getName();
-        } catch (Exception ignored) {}
-
-        if (auth != null && !auth.equals("anonymousUser")) {
-            return "cart:user:" + auth;
+            user = SecurityContextHolder.getContext().getAuthentication().getName();
+        } catch (Exception e) {
+            user = null;
         }
-        return "cart:guest:" + guestId;
-    }
 
-    private void setTtl(RMap<String, CartItem> cart,
-                        String cartKey, String guestId) {
-        if (cartKey.startsWith("cart:guest:")) {
-            cart.expire(java.time.Duration.ofDays(guestTtlDays));
-
-        } else {
-            cart.expire(java.time.Duration.ofDays(userTtlDays));
+        if (user != null && !user.equals("anonymousUser")) {
+            return "user:" + user;
         }
-    }
-
-    private String buildItemKey(Long productId, Long variantId) {
-        return productId + ":" + variantId;
+        return "guest:" + guestId;
     }
 }

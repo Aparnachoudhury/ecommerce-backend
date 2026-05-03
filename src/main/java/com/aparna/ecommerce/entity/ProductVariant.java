@@ -22,6 +22,8 @@ public class ProductVariant {
     private String sku;
 
     private String name;
+    @Column(nullable = false)
+    private Integer stock;
 
     @Column(nullable = false)
     private BigDecimal price;
