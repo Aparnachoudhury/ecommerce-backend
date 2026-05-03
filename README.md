@@ -1,3 +1,10 @@
+<img width="1920" height="1080" alt="Screenshot (1508)" src="https://github.com/user-attachments/assets/4817193a-9286-4512-9140-6ceab5643083" />
+<img width="1920" height="1080" alt="Screenshot (1509)" src="https://github.com/user-attachments/assets/142adc6b-c6f5-492a-b1c7-c17975d7e0a5" />
+<img width="1920" height="1080" alt="Screenshot (1510)" src="https://github.com/user-attachments/assets/c0a0a178-e5de-4981-8287-078e8818b720" />
+<img width="1920" height="1080" alt="Screenshot (1513)" src="https://github.com/user-attachments/assets/82239535-4387-4976-9a8d-fc355323b511" />
+<img width="1920" height="1080" alt="Screenshot (1514)" src="https://github.com/user-attachments/assets/51b08ab1-acba-4a7f-b17d-6bedf171c5d1" />
+<img width="1920" height="1080" alt="Screenshot (1515)" src="https://github.com/user-attachments/assets/040b36d8-1d03-4dcc-b38f-e4b403675653" />
+<img width="1920" height="1080" alt="Screenshot (1508)" src="https://github.com/user-attachments/assets/9fc8bcba-3e52-431f-85ed-3410504a9bda" />
 # 🛒 EcomVeda — Full Stack Ecommerce System
 
 > A production-inspired ecommerce platform built from scratch to understand how real-world systems like Amazon work — including authentication, multi-vendor onboarding, Redis-powered cart, real-time order tracking, and payment integration.
@@ -23,7 +30,9 @@ This project is my answer to those questions.
 ## 🚀 Tech Stack
 
 ### Backend
-- Java 17
+- Java 17<img width="1920" height="1080" alt="Screenshot (1512)" src="https://github.com/user-attachments/assets/f8a314ce-60da-489d-a633-6bef9b4961a8" />
+<img width="1920" height="1080" alt="Screenshot (1511)" src="https://github.com/user-attachments/assets/07d75c2c-dad5-45a5-8847-1e1480158e59" />
+
 - Spring Boot
 - Spring Security + JWT
 - PostgreSQL
@@ -202,9 +211,6 @@ Microservices architecture
 
 👉 (Add your demo video link here)
 
-📸 Screenshots
-
-👉 (Add screenshots here — dashboard, orders, payment success)
 
 💡 Key Learnings:
 Deep understanding of Spring Security filter chain
