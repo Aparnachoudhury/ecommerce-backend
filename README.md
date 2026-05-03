@@ -208,9 +208,7 @@ CI/CD with GitHub Actions
 AWS / GCP deployment
 Email notifications
 Microservices architecture
-🎥 Demo
 
-👉 (Add your demo video link here)
 
 
 💡 Key Learnings:
