@@ -10,7 +10,7 @@ https://github.com/user-attachments/assets/b8bd31d1-dd22-4749-846d-3efe8a661858
 <img width="1920" height="1080" alt="Screenshot (1508)" src="https://github.com/user-attachments/assets/9fc8bcba-3e52-431f-85ed-3410504a9bda" />
 ---
 
-# 🛒 EcomVeda — Full Stack Ecommerce System
+# 🛒 NewCart — Full Stack Ecommerce System
 
 > A production-inspired ecommerce platform built from scratch to understand how real-world systems like Amazon work — including authentication, multi-vendor onboarding, Redis-powered cart, real-time order tracking, and payment integration.
 
